@@ -1,7 +1,7 @@
 package mrlacnik
 
 // https://jodersky.github.io/scala-argparse/index.html#tutorial
-final object ArgParser {
+object ArgParser {
   def apply(args: Array[String]): ArgParser = new ArgParser(args)
 }
 

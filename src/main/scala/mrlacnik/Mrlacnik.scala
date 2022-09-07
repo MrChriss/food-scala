@@ -3,30 +3,33 @@ package mrlacnik
 import net.ruippeixotog.scalascraper.browser.JsoupBrowser
 import net.ruippeixotog.scalascraper.dsl.DSL._
 import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
+import net.ruippeixotog.scalascraper.browser._
 import scala.util.chaining._
 
+import Mrlacnik._
+
 // https://index.scala-lang.org/ruippeixotog/scala-scraper
-final object Mrlacnik {
-  def apply(): Mrlacnik = new Mrlacnik
-}
+object Mrlacnik {
+  def scrapeMenu(): Menu = {
+    val doc = JsoupBrowser().get(mrlacnikUrl)
 
-final class Mrlacnik {
-  private final val mrlacnikUrl = "https://www.kasca-mrlacnik.jedilnilist.si/stran/malica/"
-  private final val menuCssSelector = "div.row.gutters > div.columns > h6"
-  private final val dateCssSelector = "div.row.gutters > div.columns > h6 > span:nth-child(1)"
+    Menu(menuDate(doc), menuItems(doc))
+  }
 
-  private final lazy val doc =  JsoupBrowser().get(mrlacnikUrl)
+  final case class MenuItem(dish: String, price: String)
+  final case class Menu(date: String, menuItems: List[MenuItem])
 
-  private def extractItems(cssSelector: String): List[String] = {
+  private val mrlacnikUrl = "https://www.kasca-mrlacnik.jedilnilist.si/stran/malica/"
+  private val menuCssSelector = "div.row.gutters > div.columns > h6"
+  private val dateCssSelector = "div.row.gutters > div.columns > h6 > span:nth-child(1)"
+
+  private def extractItems(doc: Browser#DocumentType, cssSelector: String): List[String] = {
     doc.extract(elementList(cssSelector)).map(_.text).filterNot(_.isBlank)
   }
 
-  type MenuItemWithPrice = (String, String)
-  type MenuItemsWithPrice = List[MenuItemWithPrice]
-
   // List(("spaghetti", "2,00$"), ...)
-  def menuItems(): MenuItemsWithPrice = {
-    extractItems(menuCssSelector)
+  private def menuItems(doc: Browser#DocumentType): List[MenuItem] = {
+    extractItems(doc, menuCssSelector)
     .drop(1) // first element is the date and must be dropped
     .flatMap(_.split('€'))
     .dropRight(1)
@@ -34,12 +37,12 @@ final class Mrlacnik {
     .map(_.replaceAll("""\([A-Za-z,\.]+\)""", " "))
     .map(
       _.split("""\s(?=\d)""")
-       .pipe { case Array(dish, price) => (dish.strip, price.replaceAll("""[[:space:]]*""", "")) }
+       .pipe { case Array(dish, price) => MenuItem(dish.strip, price.replaceAll("""[[:space:]]*""", "")) }
     )
   }
 
   // returns: Ponedeljek, 5.9.2022
-  def menuDate(): String = {
-    extractItems(dateCssSelector).head
+  private def menuDate(doc: Browser#DocumentType): String = {
+    extractItems(doc, dateCssSelector).head
   }
 }
