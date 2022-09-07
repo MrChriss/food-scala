@@ -1,12 +1,9 @@
 package mrlacnik
 
-import net.ruippeixotog.scalascraper.browser.JsoupBrowser
 import net.ruippeixotog.scalascraper.dsl.DSL._
 import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
 import net.ruippeixotog.scalascraper.browser._
 import scala.util.chaining._
-
-import Mrlacnik._
 
 // https://index.scala-lang.org/ruippeixotog/scala-scraper
 object Mrlacnik {
