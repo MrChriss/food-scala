@@ -8,7 +8,7 @@ final object ArgParser {
 final class ArgParser(args: Array[String]) {
   final lazy val isShort = long.value ^ short.value
 
-  private val parser = argparse.default.ArgumentParser(description = """Presents "Kašča Mrlačnik" lunchmenu for the current day to the terminal""")
+  private val parser = argparse.default.ArgumentParser(description = """Presents "Kašča Mrlačnik" lunch menu for the current day to the terminal""")
 
   private val long = parser.param[Boolean](
     name = "-l",
