@@ -7,20 +7,31 @@ object Presenter {
   private val menuItemLineSeparator= "-"
   private val priceSpacePadding = 4
 
-  def apply(menu: Mrlacnik.Menu, presentShort: Boolean): Unit = new Presenter(menu, presentShort).present()
+  def apply(eitherMenu: Either[Mrlacnik.ScrapeError, Mrlacnik.Menu], presentShort: Boolean): Unit = {
+    new Presenter(eitherMenu, presentShort).present()
+  }
 }
 
-final class Presenter(menu: Mrlacnik.Menu, presentShort: Boolean) {
+final class Presenter(eitherMenu: Either[Mrlacnik.ScrapeError, Mrlacnik.Menu], presentShort: Boolean) {
   private def present() = {
-    presentDate()
-    if (presentShort) presentShortMenu() else presentLongMenu()
+    eitherMenu match {
+      case Left(scrapeError) => presentScrapeError(scrapeError.errorMessage)
+      case Right(menu) => {
+        presentDate(menu)
+        if (presentShort) presentShortMenu(menu) else presentLongMenu(menu)
+      }
+    }
   }
 
-  private def presentShortMenu() = {
+  private def presentScrapeError(errorMessage: String) = {
+    println(s"=> Error: $errorMessage")
+  }
+
+  private def presentShortMenu(menu: Mrlacnik.Menu) = {
     menu.menuItems.foreach(menuItem => println(s"- ${menuItem.dish}\n\n"))
   }
 
-  private def presentLongMenu() = {
+  private def presentLongMenu(menu: Mrlacnik.Menu) = {
     val maxMenuEntrySize: Int = menu.menuItems.map(_.dish).maxBy(_.size).size
 
     menu.menuItems.foreach(
@@ -33,7 +44,7 @@ final class Presenter(menu: Mrlacnik.Menu, presentShort: Boolean) {
     )
   }
 
-  private def presentDate() = {
+  private def presentDate(menu: Mrlacnik.Menu) = {
     println(menu.date)
     println(menuDateSeparator * menu.date.length())
   }
